@@ -1,0 +1,22 @@
+# Virtual Environment (DO NOT commit installed packages)
+venv/
+.venv/
+env/
+
+# Environment Variables & Secrets (DO NOT commit secret keys)
+.env
+*.env
+
+# Python Compiled Files & Caches (Junk files)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Vector Databases & Local Storage (Generated data)
+chroma_db/
+faiss_index/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
