@@ -27,3 +27,14 @@ def save_to_chroma(chunks):
     
     print("Successfully generated embeddings and persisted vector store!")
     return db
+
+def query_chroma(query_text: str, k: int = 3):
+    """
+    Performs a similarity search in ChromaDB using vector embeddings.
+    """
+    embedding_function = get_embedding_function()
+    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
+    
+    # Perform similarity search with relevance scores
+    results = db.similarity_search_with_score(query_text, k=k)
+    return results
