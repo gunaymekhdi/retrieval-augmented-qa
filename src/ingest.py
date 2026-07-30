@@ -1,8 +1,15 @@
 import os
+import sys
+
+# 1. Add the project root to Python's import search path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+# 2. Imports
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from src.vectorstore import save_to_chroma
 
-DATA_PATH = "data/"
+DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data")
 
 def load_and_chunk_documents():
     print("Loading documents...")
@@ -10,32 +17,28 @@ def load_and_chunk_documents():
     raw_documents = loader.load()
     
     if not raw_documents:
-        print("No documents found in the data/ directory! Add a PDF first.")
-        return
+        print("No documents found in data/ folder!")
+        return []
 
-    print(f"Loaded {len(raw_documents)} page(s) from documents.\n")
+    print(f"Loaded {len(raw_documents)} page(s).")
 
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
         chunk_overlap=200,
         length_function=len,
-        #is_separator_regex=False,
         separators=["\n\n", "\n", " ", ""],
     )
 
-    #chunks = text_splitter.split_documents(raw_documents)
-    chunks = [c for c in text_splitter.split_documents(raw_documents) if len(c.page_content.strip()) > 10]
+    all_chunks = text_splitter.split_documents(raw_documents)
+    chunks = [c for c in all_chunks if len(c.page_content.strip()) > 10]
     
-    print(f"Total chunks generated: {len(chunks)}")
-    print("--------------------------------------------------")
-    
+    print(f"Generated {len(chunks)} valid text chunks.")
+    return chunks
+
+def run_pipeline():
+    chunks = load_and_chunk_documents()
     if chunks:
-        print("Preview of First Chunk:")
-        print(f"Source: {chunks[0].metadata}")
-        print(f"Content Length: {len(chunks[0].page_content)} characters")
-        print("\nContent:")
-        print(chunks[0].page_content)
-        print("--------------------------------------------------")
+        save_to_chroma(chunks)
 
 if __name__ == "__main__":
-    load_and_chunk_documents()
+    run_pipeline()
