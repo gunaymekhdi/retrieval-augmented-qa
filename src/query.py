@@ -13,8 +13,9 @@ def main():
     print(f"🔍 Searching ChromaDB for: '{sample_query}'...\n")
     results = query_chroma(sample_query, k=3)
 
+    # 1. Handle case where database returns no chunks
     if not results:
-        print("No matching results found.")
+        print("🤖 Response: I cannot answer this based on the provided documents.")
         return
 
     print("--- TOP RELEVANT CHUNKS FOUND ---")
@@ -22,6 +23,20 @@ def main():
         print(f"\n[Result {i}] (Similarity Score: {score:.4f})")
         print(f"Content:\n{doc.page_content.strip()}")
         print("-" * 40)
+
+    # 2. Check relevance threshold to handle "Not in the docs" queries
+    # Chroma default (L2 distance): lower score = better match, > 1.8 indicates poor relevance
+    top_score = results[0][1]
+    is_out_of_bounds = top_score > 1.8
+
+    if is_out_of_bounds:
+        print("\n" + "="*40)
+        print("🤖 GENERATED RESPONSE & SOURCE REFERENCES")
+        print("="*40)
+        print("\nSummary Answer:")
+        print("I cannot answer this based on the provided documents.")
+        print("\n📌 References Used: None (Query not found in documents)")
+        return
 
     print("\n--- CONSTRUCTED RAG PROMPT ---")
     context_text = format_context(results)
