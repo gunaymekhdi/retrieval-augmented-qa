@@ -19,6 +19,16 @@ def get_prompt_template():
 
 def format_context(docs):
     """
-    Combines retrieved document text chunks into a single formatted string.
+    Combines retrieved document text chunks into a single formatted string,
+    including source file name and page metadata for citation.
     """
-    return "\n\n---\n\n".join([doc.page_content for doc, _score in docs])
+    formatted_chunks = []
+    for doc, _score in docs:
+        source = doc.metadata.get("source", "Unknown")
+        page = doc.metadata.get("page", "N/A")
+        
+        # Header showing where this chunk came from
+        header = f"[Source: {source} | Page: {page}]"
+        formatted_chunks.append(f"{header}\n{doc.page_content.strip()}")
+        
+    return "\n\n---\n\n".join(formatted_chunks)
